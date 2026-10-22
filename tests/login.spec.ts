@@ -1,46 +1,35 @@
-
 import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
 
 test.describe('Login', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/');
-    });
-    
-    // Test de login exitoso
-    test('login exitoso', async ({ page }) => {
-  await page.getByRole('textbox', { name: 'Username' }).fill('Admin');
-  await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
-  await page.getByRole('button', { name: 'Login' }).click();
+  let loginPage: LoginPage;
 
-  await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
-});
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
 
-// Test de login con usuario inválido
-test('login con usuario inválido', async ({ page }) => {
-  
-    await page.getByRole('textbox', { name: 'Username' }).fill('UsuarioFalso');
-    await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
-    await page.getByRole('button', { name: 'Login' }).click();
-  
+  test('login exitoso', async ({ page }) => {
+    await loginPage.login('Admin', 'admin123');
+
+    await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+  });
+
+  test('login con usuario inválido', async ({ page }) => {
+    await loginPage.login('UsuarioP', 'admin123');
+
     await expect(page.getByText('Invalid credentials')).toBeVisible();
   });
-  // Test de login con contraseña inválida
 
-  
   test('login con contraseña inválida', async ({ page }) => {
-    await page.getByRole('textbox', { name: 'Username' }).fill('Admin');
-    await page.getByRole('textbox', { name: 'Password' }).fill('claveMala');
-    await page.getByRole('button', { name: 'Login' }).click();
-  
+    await loginPage.login('Admin', 'claveP');
+
     await expect(page.getByText('Invalid credentials')).toBeVisible();
   });
 
-  // Test de login con campos vacíos
   test('login con campos vacíos', async ({ page }) => {
-  
-    await page.getByRole('button', { name: 'Login' }).click();
-  
+    await loginPage.loginButton.click();
+
     await expect(page.getByText('Required')).toHaveCount(2);
   });
-  
 });
